@@ -2,4 +2,4 @@ numpy >= 1.26.0
 pandas >= 2.11.1
 ase >= 3.22.1
 mendeleev >= 0.14.0
-
+acat >= 1.5.2

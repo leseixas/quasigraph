@@ -3,6 +3,7 @@
 
 # This code is part of QuasiGraph
 
+from pathlib import Path
 from setuptools import setup, find_packages
 
 # Read in requirements.txt
@@ -11,11 +12,11 @@ requirements = [r.strip() for r in requirements]
 
 setup(
     name = "quasigraph",
-    version = "0.0.1",
+    version = "0.1.0",
     packages = find_packages(),
     author = "Leandro Seixas",
     author_email = "leandro.seixas@mackenzie.br", 
-    url=" ",
+    url="https://github.com/leseixas/QuasiGraph",
     description = " ",
     long_description='''
      

@@ -20,46 +20,20 @@ class QuasiGraph(Atoms):
         bonded_atoms = [[] for _ in range(len(self.atoms))]
         
         for i, atom_i in enumerate(self.atoms):
+#            CR_i = element(atom_i.symbol).covalent_radius
             for j, atom_j in enumerate(self.atoms):
+#                CR_j = element(atom_j.symbol).covalent_radius
                 if i != j and distances[i, j] <= (1 + self.tolerance) * (CR[atom_i.number] + CR[atom_j.number]):
                     bonded_atoms[i].append(j)
                     coordination_numbers[i] += 1
                     
         return coordination_numbers, bonded_atoms
 
-## Old version
-#  def get_coordination_number(self):
-#        distances = self.atoms.get_all_distances()
-#        cn = []
-#        bonded_atoms = []
-#        for i, atom_i in enumerate(self.atoms):
-#            bondedi = []
-#            for j, atom_j in enumerate(self.atoms):
-#                if i == j:
-#                    continue
-#                if (distances[i,j] <= (1+self.tolerance)*(CR[atom_i.number]+CR[atom_j.number])):
-#                    bondedi.append(j)
-#            bonded_atoms.append(bondedi)
-#
-#        for i in bonded_atoms:
-#            cn.append(len(i))
-#        return cn, bonded_atoms
-
     def get_callevallejo_numbers(self):
         coordination_numbers, bonded_atoms = self.get_coordination_numbers()
         max_coordination_number = max(coordination_numbers, default=1)
         cvn = [sum(coordination_numbers[j] for j in bonded_atoms[i])  / max_coordination_number for i in range(len(self.atoms))]
 
-## Old version
-#   def get_callevallejo_numbers(self):
-#        cvn = [np.sum(coordination_numbers[j] for j in bonded_atoms[i]) / max_coordination_number for i in range(len(self.atoms))]
-#        cn, bonded_atoms = self.get_coordination_numbers()
-#        cvn = []
-#        for i, atom in enumerate(self.atoms):
-#            bonded_i = bonded_atoms[i]
-#            for j in bonded_i:
-#                cvn_j = np.sum(np.take(cn, bonded_i)) / max(cn)
-#            cvn.append(cvn_j)
         return cvn
 
 
@@ -87,6 +61,7 @@ class QuasiGraph(Atoms):
 
 
 if __name__ == '__main__':
+  # tests
   atoms = read(sys.argv[1])
   qg_atoms = QuasiGraph(atoms)
 #  print(qg_atoms.flatten())
