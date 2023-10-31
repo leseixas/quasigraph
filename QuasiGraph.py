@@ -43,26 +43,21 @@ class QuasiGraph(Atoms):
 
 
     def to_dataframe(self):
+       # Atomic data
+        atoms_data = [{
+            'Group': element(atom.symbol).group_id,
+            'Period': element(atom.symbol).period,
+            'Covalent radius': element(atom.symbol).covalent_radius,
+            'Electronegativity': element(atom.symbol).en_pauling,
+        } for atom in self.atoms]
+        df = pd.DataFrame(atoms_data)
+
+        # Geometric data
         cn, bonded_atoms = self.get_coordination_numbers()
         cvn = self.get_callevallejo_numbers()
-        group_list = []
-        period_list = []
-        covalent_radius_list = []
-        en_pauling_list = []
-        for i, atom in enumerate(self.atoms):
-            group_list.append(element(atom.symbol).period)
-            period_list.append(element(atom.symbol).group_id)
-            covalent_radius_list.append(element(atom.symbol).covalent_radius)
-            en_pauling_list.append(element(atom.symbol).en_pauling)
-
-        # Convert lists to Data Frame
-        df = pd.DataFrame()
-        df['Group'] = group_list
-        df['Period'] = period_list
-        df['Covalent radius'] = covalent_radius_list
-        df['Electronegativity'] = en_pauling_list
         df['CN'] = cn
         df['CVN'] = cvn
+
         return df
 
     def flatten(self):
