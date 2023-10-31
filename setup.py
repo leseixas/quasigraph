@@ -18,11 +18,11 @@ setup(
     QuasiGraph
     ''',
     install_requires = [
-        'numpy >= 1.26.*',
-        'pandas >= 2.11.*',
-        'ase >= 3.22.*',
-        'mendeleev >= 0.14.*',
-        'acat >= 1.5.*'
+        'numpy',
+        'pandas',
+        'ase',
+        'mendeleev',
+        'acat'
     ], 
     license = 'MIT',
     classifiers = [
