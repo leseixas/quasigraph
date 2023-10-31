@@ -31,6 +31,5 @@ setup(
          "Topic :: Scientific/Engineering :: Chemistry",
          "Topic :: Scientific/Engineering :: Physics",
          "Operating System :: OS Independent"
-    ],
-    python_requires = '>= 3.10.*'
+    ]
 )
