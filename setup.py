@@ -6,10 +6,6 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-# Read in requirements.txt
-requirements = open('requirements.txt').readlines()
-requirements = [r.strip() for r in requirements]
-
 setup(
     name = "quasigraph",
     version = "0.1.0",
@@ -17,11 +13,17 @@ setup(
     author = "Leandro Seixas",
     author_email = "leandro.seixas@mackenzie.br", 
     url="https://github.com/leseixas/QuasiGraph",
-    description = " ",
+    description = "QuasiGraph",
     long_description='''
-     
+    QuasiGraph
     ''',
-    install_requires = requirements,
+    install_requires = [
+        'numpy >= 1.26.*',
+        'pandas >= 2.11.*',
+        'ase >= 3.22.*',
+        'mendeleev >= 0.14.*',
+        'acat >= 1.5.*'
+    ], 
     license = 'MIT',
     classifiers = [
          "Development Status :: 1 - Planning",
