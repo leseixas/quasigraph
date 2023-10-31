@@ -42,7 +42,7 @@ class QuasiGraph(Atoms):
         return cvn
 
 
-    def get_descriptor(self):
+    def to_dataframe(self):
         cn, bonded_atoms = self.get_coordination_numbers()
         cvn = self.get_callevallejo_numbers()
         group_list = []
@@ -65,11 +65,14 @@ class QuasiGraph(Atoms):
         df['CVN'] = cvn
         return df
 
+    def flatten(self):
+        df = self.to_dataframe()
+        return df.to_numpy().flatten()
+
 
 if __name__ == '__main__':
   atoms = read(sys.argv[1])
-  gcoord = QuasiGraph(atoms).get_descriptor()
-#  gcoord_flatten = gcoord.to_numpy().flatten()
+  gcoord = QuasiGraph(atoms).to_dataframe()
   print(gcoord)
 #  for i in gcoord:
 #    print(i)
