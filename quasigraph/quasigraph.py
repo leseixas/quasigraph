@@ -5,36 +5,35 @@ import numpy as np
 import pandas as pd
 from ase import Atoms
 from ase.io import read
-from ase.data import covalent_radii as CR
 from mendeleev import element
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, tolerance=0.25):
+    def __init__(self, atoms, tolerance_factor=1.25):
         super().__init__()
         self.atoms = atoms
-        self.tolerance = tolerance
+        self.tolerance_factor = tolerance_factor
    
-    def get_coordination_numbers(self):
+    def get_cn1(self):
         distances = self.atoms.get_all_distances()
         coordination_numbers = [0] * len(self.atoms)
         bonded_atoms = [[] for _ in range(len(self.atoms))]
         
         for i, atom_i in enumerate(self.atoms):
-#            CR_i = element(atom_i.symbol).covalent_radius
+            CR_i = element(atom_i.symbol).covalent_radius / 100
             for j, atom_j in enumerate(self.atoms):
-#                CR_j = element(atom_j.symbol).covalent_radius
-                if i != j and distances[i, j] <= (1 + self.tolerance) * (CR[atom_i.number] + CR[atom_j.number]):
+                CR_j = element(atom_j.symbol).covalent_radius / 100
+                if i != j and distances[i, j] <= self.tolerance_factor * (CR_i + CR_j):
                     bonded_atoms[i].append(j)
                     coordination_numbers[i] += 1
                     
         return coordination_numbers, bonded_atoms
 
-    def get_callevallejo_numbers(self):
-        coordination_numbers, bonded_atoms = self.get_coordination_numbers()
+    def get_cn2(self):
+        coordination_numbers, bonded_atoms = self.get_cn1()
         max_coordination_number = max(coordination_numbers, default=1)
-        cvn = [sum(coordination_numbers[j] for j in bonded_atoms[i])  / max_coordination_number for i in range(len(self.atoms))]
+        cn2 = [sum(coordination_numbers[j] for j in bonded_atoms[i])  / max_coordination_number for i in range(len(self.atoms))]
 
-        return cvn
+        return cn2
 
 
     def to_dataframe(self):
@@ -48,10 +47,10 @@ class QuasiGraph(Atoms):
         df = pd.DataFrame(atoms_data)
 
         # Geometric data
-        cn, bonded_atoms = self.get_coordination_numbers()
-        cvn = self.get_callevallejo_numbers()
-        df['CN'] = cn
-        df['CVN'] = cvn
+        cn1, _ = self.get_cn1()
+        cn2 = self.get_cn2()
+        df['CN1'] = cn1
+        df['CN2'] = cn2
 
         return df
 
