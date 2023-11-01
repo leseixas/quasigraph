@@ -3,4 +3,4 @@
 
 __version__ = "0.1.2"
 
-from quasigraph import QuasiGraph
+from .quasigraph import QuasiGraph
