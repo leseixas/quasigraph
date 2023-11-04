@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quasigraph"
+version = "0.1.5"
+authors = [
+  { name="Leandro Seixas", email="leandro.seixas@mackenzie.br" },
+]
+description = "quasigraph: Chemical and Geometric Descriptor Toolkit for Machine Learning Models."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    'numpy',
+    'pandas',
+    'ase',
+    'mendeleev',
+    'acat'
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/leseixas/quasigraph"

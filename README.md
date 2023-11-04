@@ -1,1 +1,1 @@
-# QuasiGraph
+# quasigraph
