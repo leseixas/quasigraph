@@ -1,4 +1,5 @@
-# quasigraph
+<p align="center">
+<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/logo.png" style="height: 90px"></p>
 
 [![PyPI - License](https://img.shields.io/pypi/l/quasigraph?color=green&style=for-the-badge)](LICENSE.txt)    [![PyPI](https://img.shields.io/pypi/v/quasigraph?color=red&label=version&style=for-the-badge)](https://pypi.org/project/quasigraph/) 
 
@@ -20,11 +21,14 @@ from quasigraph import QuasiGraph
 # Initialize an Atoms object for water using ASE's molecule function
 atoms = molecule('H2O')
 
-# Instantiate a QuasiGraph object with the Atoms object
-qg = QuasiGraph(atoms)
+# Instantiate a QuasiGraph object containing chemical and coordination numbers
+qgr = QuasiGraph(atoms)
 
-# Convert the QuasiGraph data into a pandas DataFrame containing chemical and coordination number details
-df = qg.to_dataframe()
+# Convert the QuasiGraph object into a pandas DataFrame
+df = qgr.to_dataframe()
+
+# Convert the QuasiGraph object into a vector
+vector = qgr.flatten()
 
 ```
 
