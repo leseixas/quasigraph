@@ -4,13 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "quasigraph"
-version = "0.1.5"
 authors = [
   { name="Leandro Seixas", email="leandro.seixas@mackenzie.br" },
 ]
 description = "quasigraph: Chemical and Geometric Descriptor Toolkit for Machine Learning Models."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
     'numpy',
     'pandas',
@@ -28,3 +27,8 @@ classifiers = [
 
 [project.urls]
 "Homepage" = "https://github.com/leseixas/quasigraph"
+
+[tool.hatch.version]
+path = "src/quasigraph/__init__.py"
+source = "regex"
+pattern = '^__version__ = "(.*?)"'
