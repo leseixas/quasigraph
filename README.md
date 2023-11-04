@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/logo.png" style="height: 90px"></p>
+<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/logo.png" style="height: 120px"></p>
 
 [![PyPI - License](https://img.shields.io/pypi/l/quasigraph?color=green&style=for-the-badge)](LICENSE.txt)    [![PyPI](https://img.shields.io/pypi/v/quasigraph?color=red&label=version&style=for-the-badge)](https://pypi.org/project/quasigraph/) 
 
