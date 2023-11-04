@@ -25,10 +25,10 @@ atoms = molecule('H2O')
 qgr = QuasiGraph(atoms)
 
 # Convert the QuasiGraph object into a pandas DataFrame
-df = qgr.to_dataframe()
+df = qgr.get_dataframe()
 
 # Convert the QuasiGraph object into a vector
-vector = qgr.flatten()
+vector = qgr.get_vector()
 
 ```
 

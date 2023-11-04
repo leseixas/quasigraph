@@ -65,7 +65,7 @@ class QuasiGraph(Atoms):
         return cn2
 
 
-    def to_dataframe(self):
+    def get_dataframe(self):
        # Atomic data
         atoms_data = [{
             'group_id': element(atom.symbol).group_id,
@@ -83,8 +83,8 @@ class QuasiGraph(Atoms):
 
         return df
 
-    def flatten(self):
-        df = self.to_dataframe()
+    def get_vector(self):
+        df = self.get_dataframe()
         return df.values.flatten()
 
 
@@ -92,5 +92,5 @@ if __name__ == '__main__':
   # tests
   atoms = read(sys.argv[1])
   qg_atoms = QuasiGraph(atoms)
-#  print(qg_atoms.flatten())
-  print(qg_atoms.to_dataframe())
+#  print(qg_atoms.get_vector())
+  print(qg_atoms.get_dataframe())
