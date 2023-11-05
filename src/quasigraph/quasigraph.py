@@ -37,11 +37,51 @@ from ase.io import read
 from mendeleev import element
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, tolerance_factor=1.25):
+    def __init__(self, atoms, pbc=False, tolerance_factor=1.2, offset_order=1):
         super().__init__()
         self.atoms = atoms
+#        self.symbols = atoms.symbols
+        self.pbc = pbc
         self.tolerance_factor = tolerance_factor
-   
+        if any(self.pbc):
+            self.offset_order = offset_order
+            self.distances_list, self.distances_tensor = self.get_distances_pbc()
+            self.cn1, self.bonded_atoms = self.get_cn1_pbc()
+
+    def get_offsets(self):
+        offset_basis = list(range(-self.offset_order,self.offset_order+1))
+        offsets = [[i,j,k] for i in offset_basis for j in offset_basis for k in offset_basis]
+
+        return offsets
+
+    def get_distances_pbc(self):
+        offsets = self.get_offsets()
+        offsets_vec = [offsets[i]@self.atoms.cell for i in range(len(offsets))]
+        distances_list = []
+        distances_tensor = np.zeros([len(offsets), len(self.atoms), len(self.atoms)])
+        for n, offset in enumerate(offsets_vec):
+            for i, atom_i in enumerate(self.atoms):
+                for j, atom_j in enumerate(self.atoms):
+                    distance = np.linalg.norm( atom_j.position+offset - atom_i.position )
+                    distances_list.append([i, j, offsets[n], distance])
+                    distances_tensor[n,i,j] = distance
+
+        return distances_list, distances_tensor 
+
+    def get_cn1_pbc(self):
+        distances = self.distances_tensor
+        cn1 = [0] * len(self.atoms)
+        bonded_atoms = [[] for _ in range(len(self.atoms))]
+        for n, offset in enumerate(self.get_offsets()):
+            for i, atom_i in enumerate(self.atoms):
+                CR_i = element(atom_i.symbol).covalent_radius / 100
+                for j, atom_j in enumerate(self.atoms):
+                    CR_j = element(atom_j.symbol).covalent_radius / 100
+                    if 0 < distances[n,i,j] <= self.tolerance_factor * (CR_i + CR_j):
+                        bonded_atoms[i].append([j,offset])
+                        cn1[i] += 1
+        return cn1, bonded_atoms
+
     def get_cn1(self):
         distances = self.atoms.get_all_distances()
         coordination_numbers = [0] * len(self.atoms)
@@ -88,9 +128,10 @@ class QuasiGraph(Atoms):
         return df.values.flatten()
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
   # tests
-  atoms = read(sys.argv[1])
-  qg_atoms = QuasiGraph(atoms)
-#  print(qg_atoms.get_vector())
-  print(qg_atoms.get_dataframe())
+  #atoms = read(sys.argv[1])
+  #qgr = QuasiGraph(atoms)
+#  print(qgr.get_vector())
+#  print(qgr.get_dataframe())
+  #print(qgr.get_distances())
