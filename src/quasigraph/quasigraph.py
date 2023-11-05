@@ -5,7 +5,7 @@
 # This code is part of quasigraph.
 # MIT License
 #
-# Copyright (c) 2023 Leandro Seixas
+# Copyright (c) 2023 Leandro Seixas Rocha <leandro.seixas@mackenzie.br> 
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -110,7 +110,7 @@ class QuasiGraph(Atoms):
         atoms_data = [{
             'group_id': element(atom.symbol).group_id,
             'period': element(atom.symbol).period,
-            'covalent_radius': element(atom.symbol).covalent_radius,
+            'covalent_radius': element(atom.symbol).covalent_radius / 100,
             'en_pauling': element(atom.symbol).en_pauling,
         } for atom in self.atoms]
         df = pd.DataFrame(atoms_data)
@@ -129,9 +129,6 @@ class QuasiGraph(Atoms):
 
 
 #if __name__ == '__main__':
-  # tests
-  #atoms = read(sys.argv[1])
-  #qgr = QuasiGraph(atoms)
-#  print(qgr.get_vector())
+#  atoms = read(sys.argv[1])
+#  qgr = QuasiGraph(atoms)
 #  print(qgr.get_dataframe())
-  #print(qgr.get_distances())

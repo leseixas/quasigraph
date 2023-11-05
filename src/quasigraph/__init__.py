@@ -4,7 +4,7 @@
 # This code is part of quasigraph.
 # MIT License
 #
-# Copyright (c) 2023 Leandro Seixas
+# Copyright (c) 2023 Leandro Seixas Rocha <leandro.seixas@mackenzie.br>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__version__ = "0.1.7"
+__version__ = "2023.11.1"
 
 from .quasigraph import QuasiGraph
