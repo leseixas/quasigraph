@@ -39,7 +39,6 @@ class QuasiGraph(Atoms):
     def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = "max"):
         super().__init__()
         self.atoms = atoms
-#        self.symbols = atoms.symbols
         self.pbc = pbc
         self.tolerance_factor = tolerance_factor
         self.normalization = normalization
@@ -134,6 +133,7 @@ class QuasiGraph(Atoms):
         # Geometric data
         df['CN1'] = self.cn1
         df['CN2'] = self.cn2
+        df['CN3'] = self.cn3
 
         return df
 
