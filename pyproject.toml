@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "quasigraph"
-version = "23.11.1"
+version = "23.11.2"
 authors = [
   { name="Leandro Seixas", email="leandro.seixas@mackenzie.br" },
 ]

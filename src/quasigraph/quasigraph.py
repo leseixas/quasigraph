@@ -29,7 +29,6 @@
 Module quasigraph
 '''
 
-import sys
 import numpy as np
 import pandas as pd
 from ase import Atoms
@@ -37,16 +36,23 @@ from ase.io import read
 from mendeleev import element
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, pbc=False, tolerance_factor=1.2, offset_order=1):
+    def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = "max"):
         super().__init__()
         self.atoms = atoms
 #        self.symbols = atoms.symbols
         self.pbc = pbc
         self.tolerance_factor = tolerance_factor
+        self.normalization = normalization
         if any(self.pbc):
             self.offset_order = offset_order
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
             self.cn1, self.bonded_atoms = self.get_cn1_pbc()
+        else:
+            self.distances = self.atoms.get_all_distances()
+            self.cn1, self.bonded_atoms = self.get_cn1_nopbc()
+        self.cn2 = self.get_cn2()
+        self.cn3 = self.get_cn3()
+
 
     def get_offsets(self):
         offset_basis = list(range(-self.offset_order,self.offset_order+1))
@@ -68,23 +74,9 @@ class QuasiGraph(Atoms):
 
         return distances_list, distances_tensor 
 
-    def get_cn1_pbc(self):
-        distances = self.distances_tensor
+    def get_cn1_nopbc(self):
+        distances = self.distances
         cn1 = [0] * len(self.atoms)
-        bonded_atoms = [[] for _ in range(len(self.atoms))]
-        for n, offset in enumerate(self.get_offsets()):
-            for i, atom_i in enumerate(self.atoms):
-                CR_i = element(atom_i.symbol).covalent_radius / 100
-                for j, atom_j in enumerate(self.atoms):
-                    CR_j = element(atom_j.symbol).covalent_radius / 100
-                    if 0 < distances[n,i,j] <= self.tolerance_factor * (CR_i + CR_j):
-                        bonded_atoms[i].append([j,offset])
-                        cn1[i] += 1
-        return cn1, bonded_atoms
-
-    def get_cn1(self):
-        distances = self.atoms.get_all_distances()
-        coordination_numbers = [0] * len(self.atoms)
         bonded_atoms = [[] for _ in range(len(self.atoms))]
         
         for i, atom_i in enumerate(self.atoms):
@@ -93,17 +85,41 @@ class QuasiGraph(Atoms):
                 CR_j = element(atom_j.symbol).covalent_radius / 100
                 if i != j and distances[i, j] <= self.tolerance_factor * (CR_i + CR_j):
                     bonded_atoms[i].append(j)
-                    coordination_numbers[i] += 1
+                    cn1[i] += 1
                     
-        return coordination_numbers, bonded_atoms
+        return cn1, bonded_atoms
+
+    def get_cn1_pbc(self):
+        distances = self.distances_tensor
+        cn1 = [0] * len(self.atoms)
+        bonded_atoms = [[] for _ in range(len(self.atoms))]
+        for n in range(len(self.get_offsets())):
+            for i, atom_i in enumerate(self.atoms):
+                CR_i = element(atom_i.symbol).covalent_radius / 100
+                for j, atom_j in enumerate(self.atoms):
+                    CR_j = element(atom_j.symbol).covalent_radius / 100
+                    if 0 < distances[n,i,j] <= self.tolerance_factor * (CR_i + CR_j):
+                        bonded_atoms[i].append(j)
+                        cn1[i] += 1
+        return cn1, bonded_atoms
 
     def get_cn2(self):
-        coordination_numbers, bonded_atoms = self.get_cn1()
-        max_coordination_number = max(coordination_numbers, default=1)
-        cn2 = [sum(coordination_numbers[j] for j in bonded_atoms[i])  / max_coordination_number for i in range(len(self.atoms))]
-
+        cn1, bonded_atoms = self.cn1, self.bonded_atoms
+        if self.normalization == "none":
+            norm_cn1 = 1
+        else:
+            norm_cn1 = max(cn1, default=1)
+        cn2 = [sum(cn1[j] for j in bonded_atoms[i]) / norm_cn1 for i in range(len(self.atoms))]
         return cn2
 
+    def get_cn3(self):
+        cn2, bonded_atoms = self.cn2, self.bonded_atoms
+        if self.normalization == "none":
+            norm_cn2 = 1
+        else:
+            norm_cn2 = max(cn2, default=1)
+        cn3 = [sum(cn2[j] for j in bonded_atoms[i]) / norm_cn2 for i in range(len(self.atoms))]
+        return cn3
 
     def get_dataframe(self):
        # Atomic data
@@ -116,10 +132,8 @@ class QuasiGraph(Atoms):
         df = pd.DataFrame(atoms_data)
 
         # Geometric data
-        cn1, _ = self.get_cn1()
-        cn2 = self.get_cn2()
-        df['CN1'] = cn1
-        df['CN2'] = cn2
+        df['CN1'] = self.cn1
+        df['CN2'] = self.cn2
 
         return df
 
@@ -128,7 +142,9 @@ class QuasiGraph(Atoms):
         return df.values.flatten()
 
 
-#if __name__ == '__main__':
-#  atoms = read(sys.argv[1])
-#  qgr = QuasiGraph(atoms)
-#  print(qgr.get_dataframe())
+# if __name__ == '__main__':
+# #  import sys
+# #  atoms = read(sys.argv[1])
+#     atoms = read('/Users/leseixas/quasigraph/examples/Ag13.xyz')
+#     qgr = QuasiGraph(atoms)
+#     print(qgr.get_dataframe())
