@@ -37,12 +37,13 @@ from mendeleev import element
 #from numba import jit
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = "max"):
+    def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = False, regularization = True):
         super().__init__()
         self.atoms = atoms
         self.pbc = pbc
         self.tolerance_factor = tolerance_factor
         self.normalization = normalization
+        self.regularization = regularization
         if any(self.pbc):
             self.offset_order = offset_order
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
@@ -107,20 +108,24 @@ class QuasiGraph(Atoms):
 
     def get_cn2(self):
         cn1, bonded_atoms = self.cn1, self.bonded_atoms
-        if self.normalization == "none":
-            norm_cn1 = 1
-        else:
+        if any(self.normalization):
             norm_cn1 = max(cn1, default=1)
+        else:
+            norm_cn1 = 1
         cn2 = [sum(cn1[j] for j in bonded_atoms[i]) / norm_cn1 for i in range(len(self.atoms))]
+        if any(self.regularization):
+            cn2 = np.array(cn2) - np.array(cn1)
         return cn2
 
     def get_cn3(self):
         cn2, bonded_atoms = self.cn2, self.bonded_atoms
-        if self.normalization == "none":
-            norm_cn2 = 1
-        else:
+        if any(self.normalization):
             norm_cn2 = max(cn2, default=1)
+        else:
+            norm_cn2 = 1
         cn3 = [sum(cn2[j] for j in bonded_atoms[i]) / norm_cn2 for i in range(len(self.atoms))]
+        if any(self.regularization):
+            cn3 = np.array(cn3) - np.array(cn2)
         return cn3
 
     def get_dataframe(self):
