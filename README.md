@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/logo.png" style="height: 120px"></p>
+<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/logo.png" style="height: 150px"></p>
 
 [![PyPI - License](https://img.shields.io/pypi/l/quasigraph?color=green&style=for-the-badge)](LICENSE.txt)    [![PyPI](https://img.shields.io/pypi/v/quasigraph?color=red&label=version&style=for-the-badge)](https://pypi.org/project/quasigraph/) 
 
@@ -58,7 +58,7 @@ The geometric part involves identifying all bonds and computing the coordination
 <p align="center">
 <img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/methanol.png" style="height: 150px"></p>
 
-<p align="center">Figure 1 - Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom..</p>
+<p align="center">Figure 1 - Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom.</p>
 
 For example, for methanol (CH<sub>3</sub>OH) we have the the geometric data, as shown in Fig. 1.
 
