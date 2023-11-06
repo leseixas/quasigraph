@@ -75,3 +75,7 @@ For example, for methanol (CH<sub>3</sub>OH) we have the the geometric data, as 
 
 This is an open source code under [MIT License](LICENSE.txt).
 
+## Acknowledgements
+
+We thanks financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
+
