@@ -34,7 +34,6 @@ import pandas as pd
 from ase import Atoms
 from ase.io import read
 from mendeleev import element
-#from numba import jit
 
 class QuasiGraph(Atoms):
     def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = True):
@@ -74,7 +73,6 @@ class QuasiGraph(Atoms):
 
         return distances_list, distances_tensor 
 
-#    @jit
     def get_cn1_nopbc(self):
         distances = self.distances
         cn1 = [0] * len(self.atoms)
@@ -90,7 +88,6 @@ class QuasiGraph(Atoms):
                     
         return cn1, bonded_atoms
 
-#    @jit
     def get_cn1_pbc(self):
         distances = self.distances_tensor
         cn1 = [0] * len(self.atoms)
@@ -145,8 +142,8 @@ class QuasiGraph(Atoms):
         return df.values.flatten()
 
 
-if __name__ == '__main__':
-  import sys
-  atoms = read(sys.argv[1])
-  qgr = QuasiGraph(atoms, pbc=False)
-  print(qgr.get_dataframe())
+# if __name__ == '__main__':
+#   import sys
+#   atoms = read(sys.argv[1])
+#   qgr = QuasiGraph(atoms, pbc=False)
+#   print(qgr.get_dataframe())
