@@ -55,7 +55,12 @@ For example, for methanol (CH<sub>3</sub>OH) we have the table:
 
 The geometric part involves identifying all bonds and computing the coordination numbers for each atom, indicated as CN1. Additionally, the generalized coordination number (CN2) is determined by summing the coordination numbers of the neighboring ligands for each atom and normalizing this sum by the highest coordination number found in the molecule.
 
-For example, for methanol (CH<sub>3</sub>OH) we have the the geometric data:
+<p align="center">
+<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/methanol.png" style="height: 150px"></p>
+
+<p align="center">Figure 1 - Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom..</p>
+
+For example, for methanol (CH<sub>3</sub>OH) we have the the geometric data, as shown in Fig. 1.
 
 |   CN1 |   CN2 |
 |------:|------:|
