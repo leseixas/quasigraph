@@ -44,9 +44,9 @@ For example, for water (H<sub>2</sub>O) we have the table:
 
 |    |   group_id |   period |   covalent_radius |   en_pauling |
 |---:|-----------:|---------:|------------------:|-------------:|
-|  0 |         16 |        2 |                63 |         3.44 |
-|  1 |          1 |        1 |                32 |         2.2  |
-|  2 |          1 |        1 |                32 |         2.2  |
+|  0 |         16 |        2 |              0.63 |         3.44 |
+|  1 |          1 |        1 |              0.32 |         2.2  |
+|  2 |          1 |        1 |              0.32 |         2.2  |
 
 ## Geometric part
 
