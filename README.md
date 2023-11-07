@@ -60,7 +60,7 @@ The geometric part involves identifying all bonds and computing the coordination
 
 <p align="center">Figure 1 - Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom.</p>
 
-For example, for methanol (CH<sub>3</sub>OH) we have the the geometric data, as shown in Fig. 1.
+For example, for methanol (CH<sub>3</sub>OH) we have the geometric data, as shown in Fig. 1.
 
 |   CN1 |   CN2 |
 |------:|------:|
@@ -77,5 +77,5 @@ This is an open source code under [MIT License](LICENSE.txt).
 
 ## Acknowledgements
 
-We thanks financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
+We thank financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
 
