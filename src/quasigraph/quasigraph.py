@@ -50,7 +50,6 @@ class QuasiGraph(Atoms):
             self.distances = self.atoms.get_all_distances()
             self.cn1, self.bonded_atoms = self.get_cn1_nopbc()
         self.cn2 = self.get_cn2()
-        # self.cn3 = self.get_cn3()
 
 
     def get_offsets(self):
@@ -111,15 +110,6 @@ class QuasiGraph(Atoms):
         cn2 = [sum(cn1[j] for j in bonded_atoms[i]) / norm_cn1 for i in range(len(self.atoms))]
         return cn2
 
-    # def get_cn3(self):
-    #     cn2, bonded_atoms = self.cn2, self.bonded_atoms
-    #     if self.normalization:
-    #         norm_cn2 = max(cn2, default=1)
-    #     else:
-    #         norm_cn2 = 1
-    #     cn3 = [sum(cn2[j] for j in bonded_atoms[i]) / norm_cn2 for i in range(len(self.atoms))]
-    #     return cn3
-
     def get_dataframe(self):
        # Atomic data
         atoms_data = [{
@@ -133,7 +123,6 @@ class QuasiGraph(Atoms):
         # Geometric data
         df['CN1'] = self.cn1
         df['CN2'] = self.cn2
-        # df['CN3'] = self.cn3
 
         return df
 
