@@ -5,14 +5,14 @@
 
 **Quasigraph** is an open-source toolkit designed for generating chemical and geometric descriptors to be used in machine learning models.
 
-## Installation
+# Installation
 
 The easiest method to install quasigraph is by utilizing pip:
 ```bash
 $ pip install quasigraph
 ```
 
-## Getting started
+# Getting started
 
 ```python
 from ase.build import molecule
@@ -71,11 +71,11 @@ For example, for methanol (CH<sub>3</sub>OH) we have the geometric data, as show
 |     1 |  1.00 |
 |     1 |  1.00 |
 
-## License
+# License
 
 This is an open source code under [MIT License](LICENSE.txt).
 
-## Acknowledgements
+# Acknowledgements
 
 We thank financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
 
