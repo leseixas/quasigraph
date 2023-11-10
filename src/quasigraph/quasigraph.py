@@ -34,6 +34,7 @@ import pandas as pd
 from ase import Atoms
 from ase.io import read
 from mendeleev import element
+# from numba import jit
 
 class QuasiGraph(Atoms):
     def __init__(self, atoms, pbc = False, tolerance_factor = 1.2, offset_order = 1, normalization = True):
@@ -48,9 +49,11 @@ class QuasiGraph(Atoms):
             self.cn1, self.bonded_atoms = self.get_cn1_pbc()
         else:
             self.distances = self.atoms.get_all_distances()
-            self.cn1, self.bonded_atoms = self.get_cn1_nopbc()
+            covalent_radii, positions = self.prepare_cn1_data()
+            self.cn1, self.bonded_atoms = self.get_cn1_nopbc_vectorized(covalent_radii, positions)
+            #self.cn1, self.bonded_atoms = self.get_cn1_nopbc()
         self.cn2 = self.get_cn2()
-
+ 
 
     def get_offsets(self):
         offset_basis = list(range(-self.offset_order,self.offset_order+1))
@@ -71,6 +74,36 @@ class QuasiGraph(Atoms):
                     distances_tensor[n,i,j] = distance
 
         return distances_list, distances_tensor 
+
+    def prepare_cn1_data(self):
+        # Compute covalent radii array
+        covalent_radii = np.array([element(atom.symbol).covalent_radius / 100 for atom in self.atoms])
+
+        # Compute positions array
+        positions = np.array([atom.position for atom in self.atoms])
+
+        return covalent_radii, positions
+
+    def get_cn1_nopbc_vectorized(self, covalent_radii, positions):
+        # Calculate distance matrix
+        dist_matrix = np.linalg.norm(positions[:, np.newaxis, :] - positions[np.newaxis, :, :], axis=-1)
+
+        # Create threshold matrix
+        threshold_matrix = self.tolerance_factor * (covalent_radii[:, np.newaxis] + covalent_radii)
+
+        # Compare distances with thresholds
+        bonding_matrix = (dist_matrix <= threshold_matrix)
+
+        # Set diagonal to False to ignore self-bonding
+        np.fill_diagonal(bonding_matrix,False)
+
+        # Count bonded atoms
+        cn1 = bonding_matrix.sum(axis=1)
+
+        # Determine bonded atoms
+        bonded_atoms = [list(np.where(row)[0]) for row in bonding_matrix]
+
+        return cn1, bonded_atoms
 
     def get_cn1_nopbc(self):
         distances = self.distances
@@ -131,8 +164,10 @@ class QuasiGraph(Atoms):
         return df.values.flatten()
 
 
-# if __name__ == '__main__':
-#   import sys
-#   atoms = read(sys.argv[1])
-#   qgr = QuasiGraph(atoms, pbc=False)
-#   print(qgr.get_dataframe())
+if __name__ == '__main__':
+  # import sys
+  # atoms = read(sys.argv[1])
+  from ase.cluster import Icosahedron
+  atoms = Icosahedron("Pt", noshells=4)
+  qgr = QuasiGraph(atoms, pbc=False)
+  print(qgr.get_vector())
