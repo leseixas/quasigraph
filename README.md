@@ -18,7 +18,7 @@ $ pip install quasigraph
 from ase.build import molecule
 from quasigraph import QuasiGraph
 
-# Initialize an Atoms object for water using ASE's molecule function
+# Initialize an Atoms object for methanol (CH3OH) using ASE's molecule function
 atoms = molecule('CH3OH')
 
 # Instantiate a QuasiGraph object containing chemical and coordination numbers
