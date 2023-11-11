@@ -78,6 +78,4 @@ This is an open source code under [MIT License](LICENSE.txt).
 
 We thank financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
 
-# References
-
 [^1]: Calle-Vallejo, F., Martínez, J. I., García-Lastra, J. M., Sautet, P. & Loffreda, D. [Fast Prediction of Adsorption Properties for Platinum Nanocatalysts with Generalized Coordination Numbers](https://doi.org/10.1002/anie.201402958), *Angew. Chem. Int. Ed.* **53**, 8316-8319 (2014).
