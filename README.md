@@ -1,3 +1,8 @@
+---
+title: "QuasiGraph"
+author: "Leandro Seixas Rocha"
+---
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/logo.png" style="height: 150px"></p>
 
@@ -53,7 +58,7 @@ For example, for methanol (CH<sub>3</sub>OH) we have the table:
 
 ## Geometric part
 
-The geometric part involves identifying all bonds and computing the coordination numbers for each atom, indicated as CN1. Additionally, the generalized coordination number (CN2) is determined by summing the coordination numbers of the neighboring ligands for each atom and normalizing this sum by the highest coordination number found in the molecule.
+The geometric part involves identifying all bonds and computing the coordination numbers for each atom, indicated as CN1. Additionally, the generalized coordination number (CN2)[^1] is determined by summing the coordination numbers of the neighboring ligands for each atom and normalizing this sum by the highest coordination number found in the molecule.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/methanol.png" style="height: 150px"></p>
@@ -79,3 +84,6 @@ This is an open source code under [MIT License](LICENSE.txt).
 
 We thank financial support from FAPESP (Grant No. 2022/14549-3), INCT Materials Informatics (Grant No. 406447/2022-5), and CNPq (Grant No. 311324/2020-7).
 
+# References
+
+[^1]: Calle-Vallejo, F., Martínez, J. I., García-Lastra, J. M., Sautet, P. & Loffreda, D. [Fast Prediction of Adsorption Properties for Platinum Nanocatalysts with Generalized Coordination Numbers](https://doi.org/10.1002/anie.201402958), *Angew. Chem. Int. Ed.* **53**, 8316-8319 (2014).

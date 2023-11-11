@@ -168,6 +168,6 @@ if __name__ == '__main__':
   # import sys
   # atoms = read(sys.argv[1])
   from ase.cluster import Icosahedron
-  atoms = Icosahedron("Pt", noshells=4)
+  atoms = Icosahedron("Pt", noshells=3)
   qgr = QuasiGraph(atoms, pbc=False)
   print(qgr.get_vector())
