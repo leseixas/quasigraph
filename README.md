@@ -42,7 +42,7 @@ The chemical part of the descriptor employs the [Mendeleev library](https://gith
 For example, for methanol (CH<sub>3</sub>OH) we have the table:
 
 |    |   group_id |   period |   covalent_radius |   en_pauling |
-|---:|-----------:|---------:|------------------:|-------------:|
+|---:|:----------:|:--------:|:-----------------:|:------------:|
 |  0 |         14 |        2 |              0.75 |         2.55 |
 |  1 |         16 |        2 |              0.63 |         3.44 |
 |  2 |          1 |        1 |              0.32 |         2.2  |
@@ -54,17 +54,15 @@ For example, for methanol (CH<sub>3</sub>OH) we have the table:
 
 The geometric part involves identifying all bonds and computing the coordination numbers for each atom, indicated as CN1. Additionally, the generalized coordination number (CN2)[^1] is determined by summing the coordination numbers of the neighboring ligands for each atom and normalizing this sum by the highest coordination number found in the molecule.
 
-```{figure} https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/methanol.png
-:name: Figure1
-:align: center
+<p align="center">
+<img src="https://raw.githubusercontent.com/leseixas/quasigraph/master/resources/methanol.png" style="height: 150px"></p>
 
-Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom.
-```
+<p align="center"><a name="fig1">Figure 1</a> - Schematic representation of the methanol molecule, indicating the chemical symbol and coordination number (CN1) for every atom.</p>
 
 For example, for methanol (CH<sub>3</sub>OH) we have the geometric data, as shown in [Fig. 1](#fig1).
 
 |   CN1 |   CN2 |
-|------:|------:|
+|:-----:|:-----:|
 |     4 |  1.25 |
 |     2 |  1.25 |
 |     1 |  1.00 |
