@@ -97,7 +97,7 @@ class QuasiGraph(Atoms):
         dist_matrix = np.linalg.norm(positions[:, np.newaxis, :] - positions[np.newaxis, :, :], axis=-1)
 
         # Create threshold matrix
-        threshold_matrix = 1 + self.tolerance * (covalent_radii[:, np.newaxis] + covalent_radii)
+        threshold_matrix = (1 + self.tolerance) * (covalent_radii[:, np.newaxis] + covalent_radii)
 
         # Compare distances with thresholds
         bonding_matrix = (dist_matrix <= threshold_matrix)
@@ -122,7 +122,7 @@ class QuasiGraph(Atoms):
             CR_i = element(atom_i.symbol).covalent_radius / 100
             for j, atom_j in enumerate(self.atoms):
                 CR_j = element(atom_j.symbol).covalent_radius / 100
-                if i != j and distances[i, j] <= 1 + self.tolerance * (CR_i + CR_j):
+                if i != j and distances[i, j] <= (1 + self.tolerance) * (CR_i + CR_j):
                     bonded_atoms[i].append(j)
                     cn1[i] += 1
                     
@@ -137,7 +137,7 @@ class QuasiGraph(Atoms):
                 CR_i = element(atom_i.symbol).covalent_radius / 100
                 for j, atom_j in enumerate(self.atoms):
                     CR_j = element(atom_j.symbol).covalent_radius / 100
-                    if 0 < distances[n,i,j] <= 1 + self.tolerance * (CR_i + CR_j):
+                    if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
                         bonded_atoms[i].append(j)
                         cn1[i] += 1
         return cn1, bonded_atoms
