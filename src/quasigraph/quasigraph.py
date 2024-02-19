@@ -32,7 +32,6 @@ Module quasigraph
 import numpy as np
 import pandas as pd
 from ase import Atoms
-from ase.io import read
 from mendeleev import element
 
 class QuasiGraph(Atoms):
@@ -76,13 +75,13 @@ class QuasiGraph(Atoms):
 
     def prepare_cn1_data(self):
         #Atomic data
-        atomic_symbols = set()
-        for atom in self.atoms:
-            atomic_symbols.add(atom.symbol)
+        # atomic_symbols = set()
+        # for atom in self.atoms:
+        #     atomic_symbols.add(atom.symbol)
 
         #Store Mendeleev data in memory
-        symbols = atomic_symbols
-        cvr = {sym: element(sym).covalent_radius for sym in symbols}
+        atomic_symbols = set(self.atoms.get_chemical_symbols())
+        cvr = {sym: element(sym).covalent_radius for sym in atomic_symbols}
 
         # Compute covalent radii array
         covalent_radii = np.array([cvr[atom.symbol] / 100 for atom in self.atoms])
@@ -153,15 +152,15 @@ class QuasiGraph(Atoms):
 
     def get_dataframe(self):
         #Atomic data
-        atomic_symbols = set()
-        for atom in self.atoms:
-            atomic_symbols.add(atom.symbol)
+        # atomic_symbols = set()
+        # for atom in self.atoms:
+        #     atomic_symbols.add(atom.symbol)
 
         #Store Mendeleev data in memory
-        symbols = atomic_symbols
+        symbols = set(self.atoms.get_chemical_symbols())
         grp = {sym: element(sym).group_id for sym in symbols}
         prd = {sym: element(sym).period for sym in symbols}
-        cvr = {sym: element(sym).covalent_radius for sym in symbols}
+        cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
         enp = {sym: element(sym).en_pauling for sym in symbols}
 
         atoms_data = [{
@@ -185,9 +184,8 @@ class QuasiGraph(Atoms):
 
 
 if __name__ == '__main__':
-  # import sys
-  # atoms = read(sys.argv[1])
-  from ase.cluster import Icosahedron
-  atoms = Icosahedron("Pt", noshells=12)
+  import sys
+  from ase.io import read
+  atoms = read(sys.argv[1])
   qgr = QuasiGraph(atoms, pbc=False)
-  print(qgr.get_vector())
+  print(qgr.get_dataframe())
