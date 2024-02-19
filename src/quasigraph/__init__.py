@@ -24,6 +24,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__version__ = "24.2.2"
+__version__ = "24.2.3"
 
 from .quasigraph import QuasiGraph
