@@ -34,7 +34,7 @@ import pandas as pd
 from ase import Atoms
 from mendeleev import element
 from itertools import product
-# from .ptable import valence
+from .ptable import valence
 
 class QuasiGraph(Atoms):
     def __init__(self, atoms, pbc = [False, False, False], tolerance = 0.4, normalization = True, show_bonded_atoms = False):
@@ -47,7 +47,7 @@ class QuasiGraph(Atoms):
         if any(self.pbc):
             self.offsets = [int(offset) for offset in self.pbc]
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
-            self.cn1, self.bonded_atoms = self.get_cn1_pbc()
+            self.cn1, self.bonded_atoms = self.get_cn1_pbc_vectorized()
         else:
             self.distances = self.atoms.get_all_distances()
             covalent_radii, positions = self.prepare_cn1_data()
@@ -59,13 +59,11 @@ class QuasiGraph(Atoms):
         offset_basis = [list(range(-offset,offset+1)) for offset in self.offsets]
         combinations = list(product(*offset_basis))
         offsets_list = [list(comb) for comb in combinations]
-        # offsets = [[i,j,k] for i in offset_basis for j in offset_basis for k in offset_basis]
         return offsets_list
 
     def get_distances_pbc(self):
         offsets_list = self.get_offsets()
         offsets_vec = [offsets_list[i]@self.atoms.cell for i in range(len(offsets_list))]
-        # offsets_vec = [offsets[i]@self.atoms.cell for i in range(len(offsets))]
         distances_list = []
         distances_tensor = np.zeros([len(offsets_list), len(self.atoms), len(self.atoms)])
         for n, offset in enumerate(offsets_vec):
@@ -76,6 +74,39 @@ class QuasiGraph(Atoms):
                     distances_tensor[n,i,j] = distance
 
         return distances_list, distances_tensor 
+
+    def get_distances_pbc_vectorized(self):
+        offsets_list = self.get_offsets()
+        # Assuming self.atoms.cell is a 3x3 matrix and offsets_list is a list of 3D vectors
+        offsets_vec = np.dot(offsets_list, self.atoms.cell)  # Shape: (n_offsets, 3)
+
+        # Assuming atom positions are stored in a structured array or similar
+        positions = np.array([atom.position for atom in self.atoms])  # Shape: (n_atoms, 3)
+
+        # Reshape positions for broadcasting: (1, n_atoms, 1, 3) and (n_offsets, 1, n_atoms, 3)
+        pos_i = positions[np.newaxis, :, np.newaxis, :]  # Add axes for offsets and for j atoms
+        pos_j = positions[np.newaxis, np.newaxis, :, :]  # Add axes for offsets and for i atoms
+    
+        # Reshape offsets for broadcasting: (n_offsets, 1, 1, 3)
+        offsets_reshaped = offsets_vec[:, np.newaxis, np.newaxis, :]  # Prepare for broadcasting with positions
+
+        # Calculate all distances using broadcasting. The new axis alignment allows for the calculation
+        # of distances between all pairs of atoms, considering all offsets at once.
+        # Resulting shape: (n_offsets, n_atoms, n_atoms, 3)
+        distances = np.linalg.norm(pos_j + offsets_reshaped - pos_i, axis=-1)
+
+        # Prepare distances_list in the expected format
+        # This operation is inherently more complex to vectorize directly into the desired list format,
+        # but we can efficiently create a similar structure
+        n_offsets, n_atoms, _ = distances.shape
+        offsets_expanded = np.repeat(offsets_list, n_atoms**2, axis=0).reshape(n_offsets, n_atoms, n_atoms, 3)
+        i_indices, j_indices = np.indices((n_atoms, n_atoms))
+        distances_list = np.stack((i_indices.ravel(), j_indices.ravel(), offsets_expanded.ravel(), distances.ravel()), axis=1)
+
+        # distances_tensor is already in the correct shape: (n_offsets, n_atoms, n_atoms)
+        distances_tensor = distances
+
+        return distances_list.reshape(-1, 4), distances_tensor
 
     def prepare_cn1_data(self):
         #Store Mendeleev data in memory
@@ -111,20 +142,20 @@ class QuasiGraph(Atoms):
 
         return cn1, bonded_atoms
 
-    def get_cn1_nopbc(self):
-        distances = self.distances
-        cn1 = [0] * len(self.atoms)
-        bonded_atoms = [[] for _ in range(len(self.atoms))]
+    # def get_cn1_nopbc(self):
+    #     distances = self.distances
+    #     cn1 = [0] * len(self.atoms)
+    #     bonded_atoms = [[] for _ in range(len(self.atoms))]
         
-        for i, atom_i in enumerate(self.atoms):
-            CR_i = element(atom_i.symbol).covalent_radius / 100
-            for j, atom_j in enumerate(self.atoms):
-                CR_j = element(atom_j.symbol).covalent_radius / 100
-                if i != j and distances[i, j] <= (1 + self.tolerance) * (CR_i + CR_j):
-                    bonded_atoms[i].append(j)
-                    cn1[i] += 1
+    #     for i, atom_i in enumerate(self.atoms):
+    #         CR_i = element(atom_i.symbol).covalent_radius / 100
+    #         for j, atom_j in enumerate(self.atoms):
+    #             CR_j = element(atom_j.symbol).covalent_radius / 100
+    #             if i != j and distances[i, j] <= (1 + self.tolerance) * (CR_i + CR_j):
+    #                 bonded_atoms[i].append(j)
+    #                 cn1[i] += 1
                     
-        return cn1, bonded_atoms
+    #     return cn1, bonded_atoms
 
     def get_cn1_pbc(self):
         distances = self.distances_tensor
@@ -138,6 +169,31 @@ class QuasiGraph(Atoms):
                     if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
                         bonded_atoms[i].append(j)
                         cn1[i] += 1
+        return cn1, bonded_atoms
+
+    def get_cn1_pbc_vectorized(self):
+        covalent_radii = np.array([element(atom.symbol).covalent_radius / 100 for atom in self.atoms])
+        n_atoms = len(self.atoms)
+    
+        # Calculate the sum of covalent radii for all pairs (broadcasting to create a matrix of shape (n_atoms, n_atoms))
+        sum_radii = covalent_radii[:, np.newaxis] + covalent_radii  # Shape: (n_atoms, n_atoms)
+        sum_radii_with_tolerance = (1 + self.tolerance) * sum_radii
+    
+        # Now, compare each distance to the sum of covalent radii with tolerance, across all offsets
+        # Using broadcasting to compare distances with sum_radii_with_tolerance
+        bonded_matrix = (0 < self.distances_tensor) & (self.distances_tensor <= sum_radii_with_tolerance[np.newaxis, :, :])
+    
+        # Sum over the first axis (n_offsets) to count bonded instances, then over j to get the total count for each atom i
+        cn1 = bonded_matrix.sum(axis=(0, 2))
+    
+        # To get bonded atoms, we need a bit more work since it's a list of lists. This part is inherently not fully vectorizable
+        # due to the variable number of bonded atoms for each atom, but we can still avoid explicit Python loops over atoms
+        bonded_atoms = []
+        for i in range(n_atoms):
+            # Flatten the matrix for atom i across all offsets and find indices (atoms) where bonding occurs
+            bonded_indices = np.where(bonded_matrix[:, i, :].any(axis=0))[0]
+            bonded_atoms.append(bonded_indices.tolist())
+    
         return cn1, bonded_atoms
 
     def get_cn2(self):
@@ -157,6 +213,8 @@ class QuasiGraph(Atoms):
         cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
         enp = {sym: element(sym).en_pauling for sym in symbols}
         eaf = {sym: element(sym).electron_affinity for sym in symbols}
+
+        # Electron valence from ptable module
         num_n = {sym: valence[sym][0] for sym in symbols}
         num_l = {sym: valence[sym][1] for sym in symbols}
         valc = {sym: valence[sym][2] for sym in symbols}
@@ -190,7 +248,7 @@ class QuasiGraph(Atoms):
 if __name__ == '__main__':
   import sys
   from ase.io import read
-  from ptable import valence
+#   from ptable import valence
   atoms = read(sys.argv[1])
-  qgr = QuasiGraph(atoms, pbc=[True, True, True], tolerance = 0.2 ,show_bonded_atoms=True)
+  qgr = QuasiGraph(atoms, pbc=False, tolerance = 0.4, show_bonded_atoms=False)
   print(qgr.get_dataframe())
