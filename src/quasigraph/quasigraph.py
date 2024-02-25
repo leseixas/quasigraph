@@ -34,7 +34,7 @@ import pandas as pd
 from ase import Atoms
 from mendeleev import element
 from itertools import product
-from .ptable import valence
+from .ptable import VEC
 
 class QuasiGraph(Atoms):
     def __init__(self, atoms, pbc = [False, False, False], tolerance = 0.4, normalization = True, show_bonded_atoms = False):
@@ -47,12 +47,12 @@ class QuasiGraph(Atoms):
         if any(self.pbc):
             self.offsets = [int(offset) for offset in self.pbc]
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
-            self.cn1, self.bonded_atoms = self.get_cn1_pbc_vectorized()
+            self.cn, self.bonded_atoms = self.get_cn_pbc_vectorized()
         else:
             self.distances = self.atoms.get_all_distances()
-            covalent_radii, positions = self.prepare_cn1_data()
-            self.cn1, self.bonded_atoms = self.get_cn1_nopbc_vectorized(covalent_radii, positions)
-        self.cn2 = self.get_cn2()
+            covalent_radii, positions = self.prepare_cn_data()
+            self.cn, self.bonded_atoms = self.get_cn_nopbc_vectorized(covalent_radii, positions)
+        self.gcn = self.get_gcn()
  
 
     def get_offsets(self):
@@ -108,7 +108,7 @@ class QuasiGraph(Atoms):
 
         return distances_list.reshape(-1, 4), distances_tensor
 
-    def prepare_cn1_data(self):
+    def prepare_cn_data(self):
         #Store Mendeleev data in memory
         atomic_symbols = set(self.atoms.get_chemical_symbols())
         cvr = {sym: element(sym).covalent_radius for sym in atomic_symbols}
@@ -121,7 +121,7 @@ class QuasiGraph(Atoms):
 
         return covalent_radii, positions
 
-    def get_cn1_nopbc_vectorized(self, covalent_radii, positions):
+    def get_cn_nopbc_vectorized(self, covalent_radii, positions):
         # Calculate distance matrix
         dist_matrix = np.linalg.norm(positions[:, np.newaxis, :] - positions[np.newaxis, :, :], axis=-1)
 
@@ -135,16 +135,16 @@ class QuasiGraph(Atoms):
         np.fill_diagonal(bonding_matrix,False)
 
         # Count bonded atoms
-        cn1 = bonding_matrix.sum(axis=1)
+        cn = bonding_matrix.sum(axis=1)
 
         # Determine bonded atoms
         bonded_atoms = [list(np.where(row)[0]) for row in bonding_matrix]
 
-        return cn1, bonded_atoms
+        return cn, bonded_atoms
 
-    # def get_cn1_nopbc(self):
+    # def get_cn_nopbc(self):
     #     distances = self.distances
-    #     cn1 = [0] * len(self.atoms)
+    #     cn = [0] * len(self.atoms)
     #     bonded_atoms = [[] for _ in range(len(self.atoms))]
         
     #     for i, atom_i in enumerate(self.atoms):
@@ -155,11 +155,11 @@ class QuasiGraph(Atoms):
     #                 bonded_atoms[i].append(j)
     #                 cn1[i] += 1
                     
-    #     return cn1, bonded_atoms
+    #     return cn, bonded_atoms
 
-    def get_cn1_pbc(self):
+    def get_cn_pbc(self):
         distances = self.distances_tensor
-        cn1 = [0] * len(self.atoms)
+        cn = [0] * len(self.atoms)
         bonded_atoms = [[] for _ in range(len(self.atoms))]
         for n in range(len(self.get_offsets())):
             for i, atom_i in enumerate(self.atoms):
@@ -169,9 +169,9 @@ class QuasiGraph(Atoms):
                     if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
                         bonded_atoms[i].append(j)
                         cn1[i] += 1
-        return cn1, bonded_atoms
+        return cn, bonded_atoms
 
-    def get_cn1_pbc_vectorized(self):
+    def get_cn_pbc_vectorized(self):
         covalent_radii = np.array([element(atom.symbol).covalent_radius / 100 for atom in self.atoms])
         n_atoms = len(self.atoms)
     
@@ -184,7 +184,7 @@ class QuasiGraph(Atoms):
         bonded_matrix = (0 < self.distances_tensor) & (self.distances_tensor <= sum_radii_with_tolerance[np.newaxis, :, :])
     
         # Sum over the first axis (n_offsets) to count bonded instances, then over j to get the total count for each atom i
-        cn1 = bonded_matrix.sum(axis=(0, 2))
+        cn = bonded_matrix.sum(axis=(0, 2))
     
         # To get bonded atoms, we need a bit more work since it's a list of lists. This part is inherently not fully vectorizable
         # due to the variable number of bonded atoms for each atom, but we can still avoid explicit Python loops over atoms
@@ -194,47 +194,45 @@ class QuasiGraph(Atoms):
             bonded_indices = np.where(bonded_matrix[:, i, :].any(axis=0))[0]
             bonded_atoms.append(bonded_indices.tolist())
     
-        return cn1, bonded_atoms
+        return cn, bonded_atoms
 
-    def get_cn2(self):
-        cn1, bonded_atoms = self.cn1, self.bonded_atoms
+    def get_gcn(self):
+        cn, bonded_atoms = self.cn, self.bonded_atoms
         if self.normalization:
-            norm_cn1 = max(cn1, default=1)
+            norm_cn = max(cn, default=1)
         else:
-            norm_cn1 = 1
-        cn2 = [sum(cn1[j] for j in bonded_atoms[i]) / norm_cn1 for i in range(len(self.atoms))]
-        return cn2
+            norm_cn = 1
+        gcn = [sum(cn[j] for j in bonded_atoms[i]) / norm_cn for i in range(len(self.atoms))]
+        return gcn
 
     def get_dataframe(self):
         #Store Mendeleev data in memory
         symbols = set(self.atoms.get_chemical_symbols())
-        grp = {sym: element(sym).group_id for sym in symbols}
-        prd = {sym: element(sym).period for sym in symbols}
+        # grp = {sym: element(sym).group_id for sym in symbols}
+        # prd = {sym: element(sym).period for sym in symbols}
         cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
+        atr = {sym: element(sym).atomic_radius / 100 for sym in symbols}
         enp = {sym: element(sym).en_pauling for sym in symbols}
         eaf = {sym: element(sym).electron_affinity for sym in symbols}
 
-        # Electron valence from ptable module
-        num_n = {sym: valence[sym][0] for sym in symbols}
-        num_l = {sym: valence[sym][1] for sym in symbols}
-        valc = {sym: valence[sym][2] for sym in symbols}
+        # Valence electron concentration from ptable module
+        vec = {sym: VEC[sym] for sym in symbols}
         
         atoms_data = [{
-            'group': grp[atom.symbol],
-            'period': prd[atom.symbol],
+            # 'group': grp[atom.symbol],
+            # 'period': prd[atom.symbol],
+            'VEC': vec[atom.symbol],
             'covalent_radius': cvr[atom.symbol],
+            'atomic_radius': atr[atom.symbol],
             'en_pauling': enp[atom.symbol],
-            'electron_affinity': eaf[atom.symbol],
-            'num_n': num_n[atom.symbol],
-            'num_l': num_l[atom.symbol],
-            'valence': valc[atom.symbol]
+            'electron_affinity': eaf[atom.symbol]
             } for atom in self.atoms]
 
         df = pd.DataFrame(atoms_data)
 
         # Geometric data
-        df['CN1'] = self.cn1
-        df['CN2'] = self.cn2
+        df['CN'] = self.cn
+        df['GCN'] = self.gcn
         if self.show_bonded_atoms:
             df['bonded_atoms'] = self.bonded_atoms
 
@@ -248,7 +246,7 @@ class QuasiGraph(Atoms):
 if __name__ == '__main__':
   import sys
   from ase.io import read
-#   from ptable import valence
+#   from ptable import VEC
   atoms = read(sys.argv[1])
   qgr = QuasiGraph(atoms, pbc=False, tolerance = 0.4, show_bonded_atoms=False)
   print(qgr.get_dataframe())
