@@ -211,9 +211,9 @@ class QuasiGraph(Atoms):
         # grp = {sym: element(sym).group_id for sym in symbols}
         # prd = {sym: element(sym).period for sym in symbols}
         cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
-        atr = {sym: element(sym).atomic_radius / 100 for sym in symbols}
+        # atr = {sym: element(sym).atomic_radius / 100 for sym in symbols}
         enp = {sym: element(sym).en_pauling for sym in symbols}
-        eaf = {sym: element(sym).electron_affinity for sym in symbols}
+        # eaf = {sym: element(sym).electron_affinity for sym in symbols}
 
         # Valence electron concentration from ptable module
         vec = {sym: VEC[sym] for sym in symbols}
@@ -223,9 +223,9 @@ class QuasiGraph(Atoms):
             # 'period': prd[atom.symbol],
             'VEC': vec[atom.symbol],
             'covalent_radius': cvr[atom.symbol],
-            'atomic_radius': atr[atom.symbol],
+            # 'atomic_radius': atr[atom.symbol],
             'en_pauling': enp[atom.symbol],
-            'electron_affinity': eaf[atom.symbol]
+            # 'electron_affinity': eaf[atom.symbol]
             } for atom in self.atoms]
 
         df = pd.DataFrame(atoms_data)
