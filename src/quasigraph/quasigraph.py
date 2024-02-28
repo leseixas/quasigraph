@@ -37,13 +37,14 @@ from itertools import product
 from .ptable import VEC
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, pbc = [False, False, False], tolerance = 0.4, normalization = True, show_bonded_atoms = False):
+    def __init__(self, atoms, pbc=[False, False, False], tolerance=0.4, normalization=True, show_bonded_atoms=False, nmax=None):
         super().__init__()
         self.atoms = atoms
         self.pbc = pbc
         self.tolerance: float = tolerance
         self.normalization: bool = normalization
         self.show_bonded_atoms: bool = show_bonded_atoms
+        self.nmax = nmax
         if any(self.pbc):
             self.offsets = [int(offset) for offset in self.pbc]
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
@@ -157,19 +158,19 @@ class QuasiGraph(Atoms):
                     
     #     return cn, bonded_atoms
 
-    def get_cn_pbc(self):
-        distances = self.distances_tensor
-        cn = [0] * len(self.atoms)
-        bonded_atoms = [[] for _ in range(len(self.atoms))]
-        for n in range(len(self.get_offsets())):
-            for i, atom_i in enumerate(self.atoms):
-                CR_i = element(atom_i.symbol).covalent_radius / 100
-                for j, atom_j in enumerate(self.atoms):
-                    CR_j = element(atom_j.symbol).covalent_radius / 100
-                    if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
-                        bonded_atoms[i].append(j)
-                        cn1[i] += 1
-        return cn, bonded_atoms
+    # def get_cn_pbc(self):
+    #     distances = self.distances_tensor
+    #     cn = [0] * len(self.atoms)
+    #     bonded_atoms = [[] for _ in range(len(self.atoms))]
+    #     for n in range(len(self.get_offsets())):
+    #         for i, atom_i in enumerate(self.atoms):
+    #             CR_i = element(atom_i.symbol).covalent_radius / 100
+    #             for j, atom_j in enumerate(self.atoms):
+    #                 CR_j = element(atom_j.symbol).covalent_radius / 100
+    #                 if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
+    #                     bonded_atoms[i].append(j)
+    #                     cn1[i] += 1
+    #     return cn, bonded_atoms
 
     def get_cn_pbc_vectorized(self):
         covalent_radii = np.array([element(atom.symbol).covalent_radius / 100 for atom in self.atoms])
@@ -236,7 +237,20 @@ class QuasiGraph(Atoms):
         if self.show_bonded_atoms:
             df['bonded_atoms'] = self.bonded_atoms
 
-        return df
+        if self.nmax:
+            if len(self.atoms) > self.nmax:
+                raise ValueError("The Atoms object has more atoms than the nmax value. Increase the value of nmax.")
+            lines_to_fill = self.nmax - len(self.atoms)
+            columns = list(df.keys())
+            num_columns = len(columns)
+            values_zeros = np.zeros([lines_to_fill, num_columns])
+            df_zeros = pd.DataFrame(values_zeros)
+            df_zeros.columns = columns
+            df_filled = pd.concat([df, df_zeros], ignore_index=True)
+            return df_filled
+        else:
+            return df
+
 
     def get_vector(self):
         df = self.get_dataframe()
@@ -248,5 +262,5 @@ if __name__ == '__main__':
   from ase.io import read
 #   from ptable import VEC
   atoms = read(sys.argv[1])
-  qgr = QuasiGraph(atoms, pbc=False, tolerance = 0.4, show_bonded_atoms=False)
+  qgr = QuasiGraph(atoms, pbc=False, tolerance = 0.4, show_bonded_atoms=False, nmax=15)
   print(qgr.get_dataframe())
