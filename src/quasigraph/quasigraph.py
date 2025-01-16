@@ -5,7 +5,7 @@
 # This code is part of quasigraph.
 # MIT License
 #
-# Copyright (c) 2023 Leandro Seixas Rocha <leandro.seixas@mackenzie.br> 
+# Copyright (c) 2023 Leandro Seixas Rocha <leandro.fisica@gmail.com> 
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
