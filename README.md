@@ -1,4 +1,4 @@
-<p align="center" style="margin-top:50px; margin-bottom:100px;">
+<p align="center" style="margin-top:20px; margin-bottom:50px;">
 <img src="https://raw.githubusercontent.com/leseixas/quasigraph/refs/heads/main/resources/logo.png" style="height: 70px"></p>
 
 
