@@ -2,7 +2,8 @@
 <img src="https://raw.githubusercontent.com/leseixas/quasigraph/refs/heads/main/resources/logo.png" style="height: 70px"></h1>
 
 
-[![PyPI - License](https://img.shields.io/pypi/l/quasigraph?color=green&style=for-the-badge)](LICENSE.txt)    [![PyPI](https://img.shields.io/pypi/v/quasigraph?color=red&label=version&style=for-the-badge)](https://pypi.org/project/quasigraph/) 
+[![PyPI - License](https://img.shields.io/pypi/l/quasigraph?color=green&style=for-the-badge)](LICENSE.txt)    [![PyPI](https://img.shields.io/pypi/v/quasigraph?color=red&label=version&style=for-the-badge)](https://pypi.org/project/quasigraph/) [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.14963121-blue?style=for-the-badge)](https://doi.org/10.5281/zenodo.14963121)
+
 
 **Quasigraph** is an open-source toolkit designed for generating chemical and geometric descriptors to be used in machine learning models.
 
