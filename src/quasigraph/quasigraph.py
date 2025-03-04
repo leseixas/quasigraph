@@ -37,7 +37,56 @@ from itertools import product
 from .ptable import VEC
 
 class QuasiGraph(Atoms):
-    def __init__(self, atoms, pbc=[False, False, False], tolerance=0.4, normalization=True, show_bonded_atoms=False, nmax=None):
+    def __init__(self, atoms, pbc=[False, False, False], tolerance=0.4, normalization=True, show_bonded_atoms=False, nmax=None, chemical_features=['VEC', 'atomic_radius', 'en_pauling', 'electron_affinity']):
+        """
+        Initialize the QuasiGraph object.
+
+        Parameters:
+        atoms : object
+            The atomic structure object containing atom positions and other properties.
+        pbc : list of bool, optional
+            Periodic boundary conditions along the three axes (default is [False, False, False]).
+        tolerance : float, optional
+            Tolerance value for determining bonded atoms (default is 0.4).
+        normalization : bool, optional
+            Whether to normalize the chemical features (default is True).
+        show_bonded_atoms : bool, optional
+            Whether to show bonded atoms (default is False).
+        nmax : int or None, optional
+            Maximum number of neighbors to consider (default is None).
+        chemical_features : list of str, optional
+            List of chemical features to consider (default is ['VEC', 'atomic_radius', 'en_pauling', 'electron_affinity']).
+
+        Attributes:
+        atoms : object
+            The atomic structure object.
+        pbc : list of bool
+            Periodic boundary conditions.
+        tolerance : float
+            Tolerance value for determining bonded atoms.
+        normalization : bool
+            Whether to normalize the chemical features.
+        show_bonded_atoms : bool
+            Whether to show bonded atoms.
+        nmax : int or None
+            Maximum number of neighbors to consider.
+        chemical_features : list of str
+            List of chemical features to consider.
+        offsets : list of int
+            Offsets for periodic boundary conditions.
+        distances_list : list
+            List of distances considering periodic boundary conditions.
+        distances_tensor : tensor
+            Tensor of distances considering periodic boundary conditions.
+        cn : array
+            Coordination numbers of atoms.
+        bonded_atoms : list
+            List of bonded atoms.
+        distances : array
+            Array of distances between atoms.
+        gcn : array
+            Generalized coordination numbers of atoms.
+        """
         super().__init__()
         self.atoms = atoms
         self.pbc = pbc
@@ -45,6 +94,7 @@ class QuasiGraph(Atoms):
         self.normalization: bool = normalization
         self.show_bonded_atoms: bool = show_bonded_atoms
         self.nmax = nmax
+        self.chemical_features = chemical_features
         if any(self.pbc):
             self.offsets = [int(offset) for offset in self.pbc]
             self.distances_list, self.distances_tensor = self.get_distances_pbc()
@@ -143,34 +193,6 @@ class QuasiGraph(Atoms):
 
         return cn, bonded_atoms
 
-    # def get_cn_nopbc(self):
-    #     distances = self.distances
-    #     cn = [0] * len(self.atoms)
-    #     bonded_atoms = [[] for _ in range(len(self.atoms))]
-        
-    #     for i, atom_i in enumerate(self.atoms):
-    #         CR_i = element(atom_i.symbol).covalent_radius / 100
-    #         for j, atom_j in enumerate(self.atoms):
-    #             CR_j = element(atom_j.symbol).covalent_radius / 100
-    #             if i != j and distances[i, j] <= (1 + self.tolerance) * (CR_i + CR_j):
-    #                 bonded_atoms[i].append(j)
-    #                 cn1[i] += 1
-                    
-    #     return cn, bonded_atoms
-
-    # def get_cn_pbc(self):
-    #     distances = self.distances_tensor
-    #     cn = [0] * len(self.atoms)
-    #     bonded_atoms = [[] for _ in range(len(self.atoms))]
-    #     for n in range(len(self.get_offsets())):
-    #         for i, atom_i in enumerate(self.atoms):
-    #             CR_i = element(atom_i.symbol).covalent_radius / 100
-    #             for j, atom_j in enumerate(self.atoms):
-    #                 CR_j = element(atom_j.symbol).covalent_radius / 100
-    #                 if 0 < distances[n,i,j] <= (1 + self.tolerance) * (CR_i + CR_j):
-    #                     bonded_atoms[i].append(j)
-    #                     cn1[i] += 1
-    #     return cn, bonded_atoms
 
     def get_cn_pbc_vectorized(self):
         covalent_radii = np.array([element(atom.symbol).covalent_radius / 100 for atom in self.atoms])
@@ -207,33 +229,52 @@ class QuasiGraph(Atoms):
         return gcn
 
     def get_dataframe(self):
-        #Store Mendeleev data in memory
-        symbols = set(self.atoms.get_chemical_symbols())
-        # grp = {sym: element(sym).group_id for sym in symbols}
-        # prd = {sym: element(sym).period for sym in symbols}
-        # wei = {sym: element(sym).atomic_weight for sym in symbols}
-        # cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
-        atr = {sym: element(sym).atomic_radius / 100 for sym in symbols}
-        # vdw = {sym: element(sym).vdw_radius / 100 for sym in symbols}
-        enp = {sym: element(sym).en_pauling for sym in symbols}
-        eaf = {sym: element(sym).electron_affinity for sym in symbols}
-        # dip = {sym: element(sym).dipole_polarizability for sym in symbols}
-
-        # Valence electron concentration from ptable module
-        vec = {sym: VEC[sym] for sym in symbols}
+        """
+        Constructs a pandas DataFrame of element properties for the atoms.
         
-        atoms_data = [{
-            'VEC': vec[atom.symbol],
-            # 'group': grp[atom.symbol],
-            # 'period': prd[atom.symbol],
-            # 'atomic_weight': wei[atom.symbol],
-            # 'covalent_radius': cvr[atom.symbol],
-            'atomic_radius': atr[atom.symbol],
-            # 'vdw_radius': vdw[atom.symbol],
-            'en_pauling': enp[atom.symbol],
-            'electron_affinity': eaf[atom.symbol],
-            # 'dipole_polarizability': dip[atom.symbol]
-            } for atom in self.atoms]
+        Parameters:
+            features (list of str, optional): List of property names to include.
+                Available features are:
+                    - 'group'
+                    - 'period'
+                    - 'atomic_weight'
+                    - 'covalent_radius'
+                    - 'atomic_radius'
+                    - 'vdw_radius'
+                    - 'en_pauling'
+                    - 'electron_affinity'
+                    - 'dipole_polarizability'
+                    - 'VEC'
+        
+        Returns:
+            pandas.DataFrame: A DataFrame with one row per atom and columns for each selected feature and geometric data.
+        """
+        
+        # Mapping from feature name to a function that returns the property given an element symbol.
+        feature_funcs = {
+            'group': lambda sym: element(sym).group_id,
+            'period': lambda sym: element(sym).period,
+            'atomic_weight': lambda sym: element(sym).atomic_weight,
+            'covalent_radius': lambda sym: element(sym).covalent_radius / 100,
+            'atomic_radius': lambda sym: element(sym).atomic_radius / 100,
+            'vdw_radius': lambda sym: element(sym).vdw_radius / 100,
+            'en_pauling': lambda sym: element(sym).en_pauling,
+            'electron_affinity': lambda sym: element(sym).electron_affinity,
+            'dipole_polarizability': lambda sym: element(sym).dipole_polarizability,
+            'VEC': lambda sym: VEC[sym] 
+        }
+        
+        # Build the data for each atom
+        atoms_data = []
+        for atom in self.atoms:
+            symbol = atom.symbol
+            atom_props = {}
+            for feature in self.chemical_features:
+                if feature in feature_funcs:
+                    atom_props[feature] = feature_funcs[feature](symbol)
+                else:
+                    raise ValueError(f"Feature '{feature}' is not recognized. Available features: {list(feature_funcs.keys())}")
+            atoms_data.append(atom_props)
 
         df = pd.DataFrame(atoms_data)
 
@@ -256,7 +297,36 @@ class QuasiGraph(Atoms):
             return df_filled
         else:
             return df
+    
 
+        # BACKUP CODE
+        # #Store Mendeleev data in memory
+        # symbols = set(self.atoms.get_chemical_symbols())
+        # # grp = {sym: element(sym).group_id for sym in symbols}
+        # # prd = {sym: element(sym).period for sym in symbols}
+        # # wei = {sym: element(sym).atomic_weight for sym in symbols}
+        # # cvr = {sym: element(sym).covalent_radius / 100 for sym in symbols}
+        # atr = {sym: element(sym).atomic_radius / 100 for sym in symbols}
+        # # vdw = {sym: element(sym).vdw_radius / 100 for sym in symbols}
+        # enp = {sym: element(sym).en_pauling for sym in symbols}
+        # eaf = {sym: element(sym).electron_affinity for sym in symbols}
+        # # dip = {sym: element(sym).dipole_polarizability for sym in symbols}
+
+        # # Valence electron concentration from ptable module
+        # vec = {sym: VEC[sym] for sym in symbols}
+        
+        # atoms_data = [{
+        #     'VEC': vec[atom.symbol],
+        #     # 'group': grp[atom.symbol],
+        #     # 'period': prd[atom.symbol],
+        #     # 'atomic_weight': wei[atom.symbol],
+        #     # 'covalent_radius': cvr[atom.symbol],
+        #     'atomic_radius': atr[atom.symbol],
+        #     # 'vdw_radius': vdw[atom.symbol],
+        #     'en_pauling': enp[atom.symbol],
+        #     'electron_affinity': eaf[atom.symbol],
+        #     # 'dipole_polarizability': dip[atom.symbol]
+        #     } for atom in self.atoms]
 
     def get_vector(self):
         df = self.get_dataframe()
